@@ -142,7 +142,9 @@ class InfoBase():
         short_name: basestring
             Variable's short name
         derived: bool, optional
-            Variable is derived. Info retrieval is less strict
+            Variable is derived. Info retrieval for derived variables always
+            look on the default tables if variable is not find in the 
+            requested table
 
         Returns
         -------
@@ -166,7 +168,7 @@ class InfoBase():
             var_info = self._look_in_default(
                 derived, alt_names_list, table_name)
         if var_info:
-            var_info = self._update_mip_info(table_name, var_info)
+            var_info = self._update_frequency_from_mip(table_name, var_info)
 
         return var_info
 
@@ -197,7 +199,7 @@ class InfoBase():
                      if alt_name not in alt_names_list])
         return alt_names_list
 
-    def _update_mip_info(self, table_name, var_info):
+    def _update_frequency_from_mip(self, table_name, var_info):
         mip_info = self.get_table(table_name)
         if mip_info:
             var_info = var_info.copy()
@@ -869,7 +871,9 @@ class CustomInfo(CMIP5Info):
         short_name: basestring
             Variable's short name
         derived: bool, optional
-            Variable is derived. Info retrieval is less strict
+            Variable is derived. Info retrieval for derived variables always
+            look on the default tables if variable is not find in the 
+            requested table
 
         Returns
         -------
