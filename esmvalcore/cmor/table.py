@@ -159,7 +159,7 @@ class InfoBase():
             Variable's short name
         derived: bool, optional
             Variable is derived. Info retrieval for derived variables always
-            look on the default tables if variable is not find in the 
+            look on the default tables if variable is not find in the
             requested table
 
         Returns
@@ -888,7 +888,7 @@ class CustomInfo(CMIP5Info):
             Variable's short name
         derived: bool, optional
             Variable is derived. Info retrieval for derived variables always
-            look on the default tables if variable is not find in the 
+            look on the default tables if variable is not find in the
             requested table
 
         Returns
