@@ -61,8 +61,8 @@ def read_cmor_tables(cfg_developer=None):
     CMOR_TABLES['custom'] = custom
     install_dir = os.path.dirname(os.path.realpath(__file__))
     for table in cfg_developer:
-        CMOR_TABLES[table] = _read_table(
-            cfg_developer, table, install_dir, custom, alt_names)
+        CMOR_TABLES[table] = _read_table(cfg_developer, table, install_dir,
+                                         custom, alt_names)
 
 
 def _read_table(cfg_developer, table, install_dir, custom, alt_names):
@@ -83,12 +83,10 @@ def _read_table(cfg_developer, table, install_dir, custom, alt_names):
         )
 
     if cmor_type == 'CMIP5':
-        return CMIP5Info(
-            table_path,
-            default=custom,
-            strict=cmor_strict,
-            alt_names=alt_names
-        )
+        return CMIP5Info(table_path,
+                         default=custom,
+                         strict=cmor_strict,
+                         alt_names=alt_names)
 
     if cmor_type == 'CMIP6':
         return CMIP6Info(
@@ -120,7 +118,6 @@ class InfoBase():
         found in the requested one
 
     """
-
     def __init__(self, default, alt_names, strict):
         if alt_names is None:
             alt_names = ""
@@ -181,8 +178,8 @@ class InfoBase():
 
         var_info = self._look_in_all_tables(alt_names_list)
         if not var_info:
-            var_info = self._look_in_default(
-                derived, alt_names_list, table_name)
+            var_info = self._look_in_default(derived, alt_names_list,
+                                             table_name)
         if var_info:
             var_info = self._update_frequency_from_mip(table_name, var_info)
 
@@ -210,9 +207,10 @@ class InfoBase():
         alt_names_list = [short_name]
         for alt_names in self.alt_names:
             if short_name in alt_names:
-                alt_names_list.extend(
-                    [alt_name for alt_name in alt_names
-                     if alt_name not in alt_names_list])
+                alt_names_list.extend([
+                    alt_name for alt_name in alt_names
+                    if alt_name not in alt_names_list
+                ])
         return alt_names_list
 
     def _update_frequency_from_mip(self, table_name, var_info):
@@ -248,7 +246,6 @@ class CMIP6Info(InfoBase):
         found in the requested one
 
     """
-
     def __init__(self,
                  cmor_tables_path,
                  default=None,
@@ -404,7 +401,6 @@ class CMIP6Info(InfoBase):
 @total_ordering
 class TableInfo(dict):
     """Container class for storing a CMOR table."""
-
     def __init__(self, *args, **kwargs):
         """Create a new TableInfo object for storing VariableInfo objects."""
         super(TableInfo, self).__init__(*args, **kwargs)
@@ -431,7 +427,6 @@ class JsonInfo(object):
 
     Provides common utility methods to read json variables
     """
-
     def __init__(self):
         self._json_data = {}
 
@@ -476,7 +471,6 @@ class JsonInfo(object):
 
 class VariableInfo(JsonInfo):
     """Class to read and store variable information."""
-
     def __init__(self, table_type, short_name):
         """
         Class to read and store variable information.
@@ -563,7 +557,6 @@ class VariableInfo(JsonInfo):
 
 class CoordinateInfo(JsonInfo):
     """Class to read and store coordinate information."""
-
     def __init__(self, name):
         """
         Class to read and store coordinate information.
@@ -653,8 +646,10 @@ class CMIP5Info(InfoBase):
         found in the requested one
 
     """
-
-    def __init__(self, cmor_tables_path, default=None, alt_names=None,
+    def __init__(self,
+                 cmor_tables_path,
+                 default=None,
+                 alt_names=None,
                  strict=True):
         super().__init__(default, alt_names, strict)
         cmor_tables_path = self._get_cmor_path(cmor_tables_path)
@@ -813,7 +808,6 @@ class CMIP3Info(CMIP5Info):
         found in the requested one
 
     """
-
     def _read_table_file(self, table_file, table=None):
         for dim in ('zlevel', ):
             coord = CoordinateInfo(dim)
@@ -831,8 +825,8 @@ class CMIP3Info(CMIP5Info):
 
     def _read_variable(self, short_name, frequency):
         var = super()._read_variable(short_name, frequency)
+        var.frequency = None
         var.modeling_realm = None
-        var.frequency = ''
         return var
 
 
@@ -847,7 +841,6 @@ class CustomInfo(CMIP5Info):
         ESMValTool repository
 
     """
-
     def __init__(self, cmor_tables_path=None):
         cwd = os.path.dirname(os.path.realpath(__file__))
         self._cmor_folder = os.path.join(cwd, 'tables', 'custom')
@@ -915,9 +908,7 @@ class CustomInfo(CMIP5Info):
                     self.coords[value] = self._read_coordinate(value)
                     continue
                 elif key == 'variable_entry':
-                    table[value] = self._read_variable(value, None)
-                    if table[value].frequency is None:
-                        table[value].frequency = ''
+                    table[value] = self._read_variable(value, '')
                     continue
                 if not self._read_line():
                     return
