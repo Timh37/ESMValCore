@@ -23,7 +23,9 @@ from esmvalcore.preprocessor._time import (annual_statistics, anomalies,
                                            get_time_weights,
                                            monthly_statistics, regrid_time,
                                            seasonal_statistics,
-                                           timeseries_filter)
+                                           timeseries_filter,
+                                           resample_time,
+                                           resample_hours,)
 
 
 def _create_sample_cube():
@@ -1241,6 +1243,103 @@ def test_time_weights():
     computed_cube = climate_statistics(cube, operator='mean', period='full')
     assert expected_cube.data.shape == computed_cube.data.shape
     assert_array_equal(expected_cube.data, computed_cube.data)
+
+
+class TestResampleHours(tests.Test):
+    """Test :func:`esmvalcore.preprocessor._time.resample_hours`"""
+
+    @staticmethod
+    def _create_cube(data, times):
+        time = iris.coords.DimCoord(
+            times,
+            standard_name='time',
+            units=Unit('hours since 1950-01-01', calendar='360_day'))
+        time.guess_bounds()
+        cube = iris.cube.Cube(data, dim_coords_and_dims=[(time, 0)])
+        return cube
+
+    def test_resample_1_to_6(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 48, 1)
+        times = np.arange(0, 48, 1)
+        cube = self._create_cube(data, times)
+
+        result = resample_hours(cube, 6)
+        expected = np.arange(0, 48, 6)
+        assert_array_equal(result.data, expected)
+
+    def test_resample_3_to_6(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 48, 3)
+        times = np.arange(0, 48, 3)
+        cube = self._create_cube(data, times)
+
+        result = resample_hours(cube, 6)
+        expected = np.arange(0, 48, 6)
+        assert_array_equal(result.data, expected)
+
+    def test_resample_1_to_3(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 48, 1)
+        times = np.arange(0, 48, 1)
+        cube = self._create_cube(data, times)
+
+        result = resample_hours(cube, 3)
+        expected = np.arange(0, 48, 3)
+        assert_array_equal(result.data, expected)
+
+    def test_resample_invalid(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 48, 1)
+        times = np.arange(0, 48, 1)
+        cube = self._create_cube(data, times)
+
+        with self.assertRaises(ValueError):
+            resample_hours(cube, 5)
+
+
+class TestResampleTime(tests.Test):
+    """Test :func:`esmvalcore.preprocessor._time.resample_hours`"""
+
+    @staticmethod
+    def _create_cube(data, times):
+        time = iris.coords.DimCoord(
+            times,
+            standard_name='time',
+            units=Unit('hours since 1950-01-01', calendar='360_day'))
+        time.guess_bounds()
+        cube = iris.cube.Cube(data, dim_coords_and_dims=[(time, 0)])
+        return cube
+
+    def test_resample_hourly_to_daily(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 48, 1)
+        times = np.arange(0, 48, 1)
+        cube = self._create_cube(data, times)
+
+        result = resample_time(cube, hour=12)
+        expected = np.arange(12, 48, 24)
+        assert_array_equal(result.data, expected)
+
+    def test_resample_hourly_to_monthly(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 24 * 60, 3)
+        times = np.arange(0, 24 * 60, 3)
+        cube = self._create_cube(data, times)
+
+        result = resample_time(cube, hour=12, day=15)
+        expected = np.array([12 + 14 * 24, 12 + 44 * 24])
+        assert_array_equal(result.data, expected)
+
+    def test_resample_daily_to_monthly(self):
+        """Test average of a 1D field."""
+        data = np.arange(0, 60 * 24, 24)
+        times = np.arange(0, 60 * 24, 24)
+        cube = self._create_cube(data, times)
+
+        result = resample_time(cube, day=15)
+        expected = np.array([14 * 24, 44 * 24, ])
+        assert_array_equal(result.data, expected)
 
 
 if __name__ == '__main__':
