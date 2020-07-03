@@ -9,10 +9,8 @@ RUN conda update -y conda pip
 # install environment packages
 COPY . /home/root/source
 WORKDIR /home/root/source
-RUN ls
-RUN conda env update --name base --file environment.yml
+RUN conda env update --name base --file environment.yml && conda clean --all -y
 RUN pip install .
-RUN conda clean --all -y
 RUN rm -r /home/root/source
 
 # run tests
